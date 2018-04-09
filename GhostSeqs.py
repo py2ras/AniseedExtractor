@@ -66,7 +66,9 @@ class GhostSeqsExtractor:
                 header, rawSequence = self._getHeaderAndSequence(allTrs)
                 processedSequence = self._processSequence(rawSequence)
                 self.namesSeqsDict[header] = processedSequence
+                print url
             else:
+                print "Error found with the following URL:"
                 print url
 
     def _getProcessedHtmlObject(self,url):
@@ -130,7 +132,6 @@ class GhostSeqsExtractor:
     def write2Fasta(self, outputFile):
         with open(outputFile,'w') as fOut:
             for header, sequence in self.namesSeqsDict.iteritems():
-                print header
                 fOut.write(header)
                 fOut.write("\n")
                 fOut.write(sequence)
@@ -164,7 +165,7 @@ def main():
     inputFile = sys.argv[1]
     outputFile = sys.argv[2]
     gse = GhostSeqsExtractor()
-    fo = FileObject(inputFile)
+    fo = FileObject(inputFile, transcriptIdCol = 0)
     gse.addUrlsFromFile(fo)
     gse.getSequences()
     gse.write2Excel(outputFile + ".xlsx")
