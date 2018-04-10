@@ -13,7 +13,6 @@
 import urllib2
 import re
 import sys
-import xlsxwriter
 from WriteDicts import DictWriter
 from FileInfo import FileObject
 from bs4 import BeautifulSoup

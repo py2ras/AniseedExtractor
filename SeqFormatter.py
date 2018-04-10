@@ -11,7 +11,6 @@
 
 import sys
 import re
-import xlsxwriter
 from FileInfo import FileObject
 from WriteDicts import DictWriter
 
