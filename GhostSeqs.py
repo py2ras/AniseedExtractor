@@ -14,6 +14,7 @@ import urllib2
 import re
 import sys
 import xlsxwriter
+from WriteDicts import DictWriter
 from FileInfo import FileObject
 from bs4 import BeautifulSoup
 
@@ -21,7 +22,7 @@ class GhostSeqsExtractor:
 
     def __init__(self):
         self.urlList = []
-        self.namesSeqsDict = {}
+        self.namesSeqsDict = {"test":"anything"}
 	self.baseUrl = "http://ghost.zool.kyoto-u.ac.jp/cgi-bin/fordetailkh21.cgi?name=%s&source=kh2013"
         self.genesAttrs = []
         print "Created"
@@ -129,36 +130,21 @@ class GhostSeqsExtractor:
         processedSequence = processedSequence
         return processedSequence
 
-    def write2Fasta(self, outputFile):
-        with open(outputFile,'w') as fOut:
-            for header, sequence in self.namesSeqsDict.iteritems():
-                fOut.write(header)
-                fOut.write("\n")
-                fOut.write(sequence)
-                fOut.write("\n")
-
-    def write2Excel(self, outputFile):
-        workbook = xlsxwriter.Workbook(outputFile)
-        worksheet = workbook.add_worksheet()
-        headerCol0 = "Sequence Name"
-        headerCol1 = "Sequence"
-        worksheet.write(0,0,headerCol0)
-        worksheet.write(0,1,headerCol1)
-        rowNum = 1
-        for header, sequence in self.namesSeqsDict.iteritems():
-            worksheet.write(rowNum,0,header.replace("\n","").replace(">",""))
-            worksheet.write(rowNum,1,sequence.replace("\n",""))
-            rowNum = rowNum + 1
-        workbook.close()
-
-    def write2Csv(self, outputFile, sep = ","):
-        with open(outputFile,'w') as fOut:
-            fOut.write("Sequence Name" + sep + "Sequence\n")
-            for header, sequence in self.namesSeqsDict.iteritems():
-                fOut.write(header + sep + sequence)
-                fOut.write("\n")
+    def write2File(self, outputFile, fileType="fasta"):
+        # fileType will be used as extension 
+        dc = DictWriter(outputFile+'.'+fileType, self.namesSeqsDict)
+        if fileType == "fasta":
+            dc.write2Fasta()
+        elif fileType == "csv":
+            dc.write2Csv()
+        elif fileType == "xlsx":
+            dc.write2Excel()
+        else:
+            print "Invalid File Type"
 
 def main():
+    # The output filename should not have extension
+    # Instead, the file type argument is used as extension
     if len(sys.argv) < 3:
         print "Usage: ./", sys.argv[0]," <input file name> <output file name>"
         quit()
@@ -166,11 +152,9 @@ def main():
     outputFile = sys.argv[2]
     gse = GhostSeqsExtractor()
     fo = FileObject(inputFile, transcriptIdCol = 0)
-    gse.addUrlsFromFile(fo)
-    gse.getSequences()
-    gse.write2Excel(outputFile + ".xlsx")
-    gse.write2Fasta(outputFile + ".fa")
-    gse.write2Csv(outputFile + ".csv", sep = "\t")
+    gse.write2File(outputFile, fileType = "csv")
+    gse.write2File(outputFile, fileType = "xlsx")
+    gse.write2File(outputFile, fileType = "fasta")
 
 if __name__ == '__main__':
     main()
