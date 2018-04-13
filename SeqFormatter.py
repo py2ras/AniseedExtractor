@@ -17,11 +17,14 @@ from WriteDicts import DictWriter
 class SeqFormatter:
     def __init__(self):
         self.namesSeqsDict = {}
-        self.formattingParameters = {'minSeqLength':500,
-                                    'trimStartBy':200,
+        self.formattingParameters = {
+                                    'minLength':500,
+                                    'trimStartBy':0,
                                     'trimEndBy':200,
                                     'beginFlankSeq':"gcggccgc",
-                                    'endFlankSeq':"gaattCCCTATAGTGAGTCGTATTA"}
+                                    'endFlankSeq':"gaattCCCTATAGTGAGTCGTATTA",
+                                    'requiredSeqLength':500
+                                    }
         self.formattedSeqsDict = {}
 
     def getFormattingParameters(self):
@@ -66,26 +69,37 @@ class SeqFormatter:
     def formatSeqs(self):
         for header, sequence in self.namesSeqsDict.iteritems():
             if self.isSmall(sequence):
+                print header.replace('>','') + " is smaller than the minLength"
                 formattedSequence = sequence
             else:
-                formattedSequence = self.trimAndAppendFlanks(sequence)
+                formattedSequence = self._formatSeq(sequence)
             self.formattedSeqsDict[header] = formattedSequence
 
     def isSmall(self, sequence):
-        minLength = self.formattingParameters['minSeqLength']
+        minLength = self.formattingParameters['minLength']
         if len(sequence) < minLength:
             return True
         else:
             return False
 
-    def trimAndAppendFlanks(self, sequence):
+    def _formatSeq(self,sequence):
+        trimmedSeq = self._trimSeq(sequence)
+        appendedSeq = self._appendFlanks(trimmedSeq)
+        return appendedSeq
+
+    def _trimSeq(self,sequence):
+        trimEndBy = self.formattingParameters['trimEndBy']
+        requiredSeqLength = self.formattingParameters['requiredSeqLength']
+        if len(sequence) < (requiredSeqLength + trimEndBy):
+            trimmedSeq = sequence[0:requiredSeqLength]
+        else:
+            trimmedSeq = sequence[-(requiredSeqLength + trimEndBy):-trimEndBy]
+        return trimmedSeq
+
+    def _appendFlanks(self, sequence):
         beginFlankSeq = self.formattingParameters['beginFlankSeq']
         endFlankSeq = self.formattingParameters['endFlankSeq']
-        trimStartBy = self.formattingParameters['trimStartBy']
-        trimEndBy = self.formattingParameters['trimEndBy']
-        seqLength = len(sequence)
-        trimmedSeq = sequence[trimStartBy:seqLength-trimEndBy]
-        appendedSeq = beginFlankSeq + trimmedSeq + endFlankSeq
+        appendedSeq = beginFlankSeq + sequence + endFlankSeq
         return appendedSeq
 
     def write2File(self, outputFile, fileType="fasta"):
@@ -117,7 +131,7 @@ def main():
     #sf.readSeqsFromCsv(filename, sep="\t")
     sf.getFormattingParameters()
     sf.formatSeqs()
-    sf.write2File("formattedSeqs",fileType="xlsx")
+    sf.write2File("formattedSeqs",fileType="csv")
 
 
 if __name__ == '__main__':
