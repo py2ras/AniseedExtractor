@@ -145,7 +145,7 @@ def main():
     # The output filename should not have extension
     # Instead, the file type argument is used as extension
     if len(sys.argv) < 3:
-        print "Usage: ./", sys.argv[0]," <input file name> <output file name>"
+        print "Usage: ", sys.argv[0]," <input file name> <output file name>"
         quit()
     inputFile = sys.argv[1]
     outputFile = sys.argv[2]
